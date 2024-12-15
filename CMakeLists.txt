@@ -3,14 +3,18 @@ project(mailman)
 
 set(CMAKE_CXX_STANDARD 20)
 
+#find curl
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIRS})
 
-add_executable(mailman main.cpp
-        request.cpp
-        request.h
-        validator.cpp
-        validator.h
+#include directories
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+
+add_executable(mailman src/main.cpp
+        src/request.cpp
+        src/validator.cpp
 )
 
+target_include_directories(mailman PRIVATE ${CMAKE_SOURCE_DIR}/include ${CURL_INCLUDE_DIRS})
 target_link_libraries(mailman ${CURL_LIBRARIES})
