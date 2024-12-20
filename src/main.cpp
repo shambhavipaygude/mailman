@@ -1,17 +1,19 @@
 #include <iostream>
+
+#include "get.h"
 #include "curl/curl.h"
-#include "request.h"
+#include "../include/request.h"
 
 int main() {
     // initialize curl
     curl_global_init(CURL_GLOBAL_ALL);
-    request r = request();
-    std::string url = "http://127.0.0.1:8080";
-    std::string method = "GET";
-    r.setUrl(url);
-    r.setMethod(method);
-    r.setupRequest();
-    r.performRequest();
+    std::string url = "https://api.coindesk.com/v1/bpi/currentprice.json";
+    get x(url);
+    x.send();
+    std::cout<<x.getResponseData();
+
+    //something is wrong with get response headers
+
 
     // release curl resources
     curl_global_cleanup();

@@ -1,58 +1,56 @@
-//
-// Created by a7x on 12/15/24.
-//
-
 #include "request.h"
-#include <iostream>
-#include "curl/curl.h"
+#include <stdexcept>
 #include <string>
-#include "validator.h"
 
-request::request() {
+request::request(const std::string &url): url(url) {
     curl = curl_easy_init();
+    curl_easy_setopt(curl, CURLOPT_URL,url.c_str());
     if (!curl) {
-        std::cerr << "Error initializing curl" << std::endl;
+        throw std::runtime_error("Failed to initialize curl");
     }
 }
 
-bool request::setUrl(std::string &_url) {
-    if (!validateURL(_url)) {
-        std::cerr << "Invalid URL" << std::endl;
-        return false;
-    }
-    this->url = _url;
-    return true;
+request::~request() {
+    curl_easy_cleanup(curl);
 }
 
-bool request::setMethod(std::string &_method) {
-    if (!validateMethod(_method)) {
-        std::cerr << "Invalid method" << std::endl;
-        return false;
-    }
-    this->method = _method;
-    return true;
+void request::addHeader(std::string headerName, std::string headerValue) {
+    headers[headerName] = headerValue;
 }
 
-bool request::setupRequest() {
-    std::cout << "Setting up request" << std::endl;
-    if (this->method.empty() || this->url.empty()) {
-        std::cerr << "Method or URL not set" << std::endl;
-        return false;
+void request::setHeaders() {
+    struct curl_slist *list = NULL;
+    for (auto &header : headers) {
+        std::string headerString = header.first + ": " + header.second;
+        list = curl_slist_append(list, headerString.c_str());
     }
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+    curl_slist_free_all(list);
 
-    curl_easy_setopt(curl, CURLOPT_URL, this->url.c_str()); // c.str to convert string to c style array for curl
-    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, this->method.c_str());
-
-    return true;
 }
 
-bool request::performRequest() {
-    res = curl_easy_perform(curl);
+void request::send() {
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &response_headers);
+    CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
-        std::cerr << "Error performing request: " << curl_easy_strerror(res) << std::endl;
-        return false;
+        throw std::runtime_error("curl_easy_perform() failed: " + std::string(curl_easy_strerror(res)));
     }
-    return true;
+    else {
+        curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &size);
+    }
+
 }
+
+std::string request::getResponseData() const {
+    return response_data;
+}
+
+std::string request::getResponseHeaders() const {
+    return response_headers;
+}
+
 
 
