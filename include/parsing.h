@@ -9,7 +9,7 @@
 #include <array>
 #include "processReq.h"  
 
-class request {
+class parsing {
 public:
     std::string url;                          
     std::string method;                       

@@ -91,7 +91,6 @@ bool processReq::processRequest() {
     std::cout << "URL: " << this->url << std::endl;
     std::cout << "Method: " << this->method << std::endl;
 
-    // Set up default headers if not already set
     if (this->headers.empty()) {
         std::string key = "Content-Type";
         std::string value = "application/json";

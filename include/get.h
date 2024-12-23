@@ -4,10 +4,10 @@
 
 #ifndef GET_H
 #define GET_H
-#include <request.h>
+#include <parsing.h>
 
 
-class get : public request {
+class get : public parsing {
 private:
     std::string response;
     bool successFlag;

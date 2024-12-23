@@ -1,4 +1,4 @@
-#include "request.h"
+#include "parsing.h"
 #include <iostream>
 #include "curl/curl.h"
 #include "validator.h"
@@ -6,7 +6,7 @@
 #include "post.h"
 #include "processReq.h"
 
-bool request::parseInput(std::string &input) {
+bool parsing::parseInput(std::string &input) {
     std::istringstream iss(input);
     std::string token;
 
