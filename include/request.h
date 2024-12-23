@@ -1,28 +1,30 @@
-//
-// Created by a7x on 12/15/24.
-//
-
 #ifndef REQUEST_H
 #define REQUEST_H
-#include <array>
-#include <string>
-#include "curl/curl.h"
 
+#include <string>
+#include <map>
+#include <vector>
+#include <sstream>
+#include <iostream>
+#include <array>
+#include "processReq.h"  
 
 class request {
 public:
-    request();
-    bool setUrl(std::string &url);
-    bool setMethod(std::string &method);
-    bool setupRequest();
-    bool performRequest();
+    std::string url;                          
+    std::string method;                       
+    std::map<std::string, std::string> headers; 
+    std::string auth;        
+    
+    processReq reqProcessor;                
+    bool parseInput(std::string &input);                 
 
-private:
-    CURL *curl;
-    std::string method;
-    std::string url;
-    std::array<std::string,4> validMethods = {"GET", "POST", "PUT", "DELETE"};
-    CURLcode res;
 };
 
-#endif //REQUEST_H
+#endif 
+
+/*
+  ∧,,,∧
+(  ̳• · • ̳)
+/     づ♡
+*/

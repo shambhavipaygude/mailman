@@ -4,11 +4,12 @@
 #include <string>
 #include <array>
 
-// Declare the validMethods array
 extern const std::array<std::string, 4> validMethods;
 
-// Function declarations
 bool validateMethod(const std::string& method);
 bool validateURL(const std::string& url);
+bool validateHeader(const std::string& header);
+bool validateKey(const std::string& key);
+bool validateValue(const std::string& value);
 
-#endif // VALIDATOR_H
+#endif 

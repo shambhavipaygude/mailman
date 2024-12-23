@@ -14,6 +14,9 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 add_executable(mailman src/main.cpp
         src/request.cpp
         src/validator.cpp
+        src/get.cpp
+        src/post.cpp
+        src/processReq.cpp
 )
 
 target_include_directories(mailman PRIVATE ${CMAKE_SOURCE_DIR}/include ${CURL_INCLUDE_DIRS})

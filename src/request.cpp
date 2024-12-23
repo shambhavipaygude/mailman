@@ -1,58 +1,78 @@
-//
-// Created by a7x on 12/15/24.
-//
-
 #include "request.h"
 #include <iostream>
 #include "curl/curl.h"
-#include <string>
 #include "validator.h"
+#include "get.h"
+#include "post.h"
+#include "processReq.h"
 
-request::request() {
-    curl = curl_easy_init();
-    if (!curl) {
-        std::cerr << "Error initializing curl" << std::endl;
-    }
-}
+bool request::parseInput(std::string &input) {
+    std::istringstream iss(input);
+    std::string token;
 
-bool request::setUrl(std::string &_url) {
-    if (!validateURL(_url)) {
-        std::cerr << "Invalid URL" << std::endl;
-        return false;
-    }
-    this->url = _url;
-    return true;
-}
-
-bool request::setMethod(std::string &_method) {
-    if (!validateMethod(_method)) {
-        std::cerr << "Invalid method" << std::endl;
-        return false;
-    }
-    this->method = _method;
-    return true;
-}
-
-bool request::setupRequest() {
-    std::cout << "Setting up request" << std::endl;
-    if (this->method.empty() || this->url.empty()) {
-        std::cerr << "Method or URL not set" << std::endl;
+    iss >> token;
+    if (token != "mailman") {
+        std::cerr << "Error: Input must start with 'mailman'" << std::endl;
         return false;
     }
 
-    curl_easy_setopt(curl, CURLOPT_URL, this->url.c_str()); // c.str to convert string to c style array for curl
-    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, this->method.c_str());
+    while (iss >> token) {
+        if (token == "-u") {
+            std::string url;
+            if (iss >> url) {
+                if (!reqProcessor.setUrl(url)) return false;
+            } else {
+                std::cerr << "No URL provided after -u" << std::endl;
+                return false;
+            }
+        } else if (token == "-m") {
+            std::string method;
+            if (iss >> method) {
+                if (!reqProcessor.setMethod(method)) return false;
+            } else {
+                std::cerr << "No method provided after -m" << std::endl;
+                return false;
+            }
+        } else if (token == "-a") {
+            if (iss >> auth) {
+                std::cout << "Authorization set to: " << auth << std::endl;
+            } else {
+                std::cerr << "No authorization type provided after -a" << std::endl;
+                return false;
+            }
+        } else if (token == "-h") {
+            std::vector<std::string> headers;  
+            std::string header;
 
-    return true;
-}
+            while (iss >> std::ws) {
+                if (iss >> header) {
+                    if (header.find("-h") != std::string::npos) {
+                        continue;
+                    }
+                    validateHeader(header);
+                    headers.push_back(header);
+                }
+            }
 
-bool request::performRequest() {
-    res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
-        std::cerr << "Error performing request: " << curl_easy_strerror(res) << std::endl;
-        return false;
+            for (int i = 0; i < headers.size(); i++) {
+                std::cout << headers[i] + " \n";
+                reqProcessor.processHeader(headers[i]);
+            }
+            std::cout << '\n';
+        }
     }
-    return true;
+
+    // Set default authorization if not provided
+    if (auth.empty()) {
+        auth = "Bearer token"; 
+        std::cout << "Default authorization set" << std::endl;
+    }
+
+    return reqProcessor.processRequest();
 }
 
-
+/*
+  ∧,,,∧
+(  ̳• · • ̳)
+/     づ♡
+*/

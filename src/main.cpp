@@ -1,19 +1,20 @@
 #include <iostream>
-#include "curl/curl.h"
 #include "request.h"
 
 int main() {
-    // initialize curl
     curl_global_init(CURL_GLOBAL_ALL);
-    request r = request();
-    std::string url = "http://127.0.0.1:8080";
-    std::string method = "GET";
-    r.setUrl(url);
-    r.setMethod(method);
-    r.setupRequest();
-    r.performRequest();
 
-    // release curl resources
+    std::string input;
+    std::cout << "Enter input in the format: -u URL -m METHOD -a AUTH -h HEADERS" << std::endl;
+    std::getline(std::cin, input);
+
+    request r;
+    if (!r.parseInput(input)) {
+        std::cerr << "Error parsing input. Please check your arguments." << std::endl;
+        return 1;
+    }
+
     curl_global_cleanup();
     return 0;
 }
+
