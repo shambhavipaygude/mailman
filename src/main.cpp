@@ -1,21 +1,20 @@
 #include <iostream>
-
-#include "get.h"
-#include "curl/curl.h"
-#include "../include/request.h"
+#include "request.h"
 
 int main() {
-    // initialize curl
     curl_global_init(CURL_GLOBAL_ALL);
-    std::string url = "https://api.coindesk.com/v1/bpi/currentprice.json";
-    get x(url);
-    x.send();
-    std::cout<<x.getResponseData();
 
-    //something is wrong with get response headers
+    std::string input;
+    std::cout << "Enter input in the format: -u URL -m METHOD -a AUTH -h HEADERS" << std::endl;
+    std::getline(std::cin, input);
 
+    request r;
+    if (!r.parseInput(input)) {
+        std::cerr << "Error parsing input. Please check your arguments." << std::endl;
+        return 1;
+    }
 
-    // release curl resources
     curl_global_cleanup();
     return 0;
 }
+
