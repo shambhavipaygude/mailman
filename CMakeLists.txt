@@ -12,7 +12,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 
 add_executable(mailman src/main.cpp
-        src/request.cpp
+        src/parsing.cpp
         src/validator.cpp
         src/get.cpp
         src/post.cpp
