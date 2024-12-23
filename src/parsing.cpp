@@ -1,14 +1,13 @@
 #include "parsing.h"
-#include <iostream>
-#include "curl/curl.h"
-#include "validator.h"
 #include "get.h"
-#include "post.h"
-#include "processReq.h"
+#include "validator.h"
+#include <sstream>
+#include <iostream>
+#include <memory>
 
-bool parsing::parseInput(std::string &input) {
+bool Parsing::parseInput(std::string &input) {
     std::istringstream iss(input);
-    std::string token;
+    std::string token, url, method = "GET";
 
     iss >> token;
     if (token != "mailman") {
@@ -18,61 +17,63 @@ bool parsing::parseInput(std::string &input) {
 
     while (iss >> token) {
         if (token == "-u") {
-            std::string url;
-            if (iss >> url) {
-                if (!reqProcessor.setUrl(url)) return false;
-            } else {
-                std::cerr << "No URL provided after -u" << std::endl;
+            if (!(iss >> url) || !validateURL(url)) {
+                std::cerr << "Error: Invalid URL." << std::endl;
                 return false;
             }
         } else if (token == "-m") {
-            std::string method;
-            if (iss >> method) {
-                if (!reqProcessor.setMethod(method)) return false;
-            } else {
-                std::cerr << "No method provided after -m" << std::endl;
-                return false;
-            }
-        } else if (token == "-a") {
-            if (iss >> auth) {
-                std::cout << "Authorization set to: " << auth << std::endl;
-            } else {
-                std::cerr << "No authorization type provided after -a" << std::endl;
+            if (!(iss >> method) || !validateMethod(method)) {
+                std::cerr << "Error: Invalid method." << std::endl;
                 return false;
             }
         } else if (token == "-h") {
-            std::vector<std::string> headers;  
             std::string header;
-
-            while (iss >> std::ws) {
-                if (iss >> header) {
-                    if (header.find("-h") != std::string::npos) {
-                        continue;
-                    }
-                    validateHeader(header);
-                    headers.push_back(header);
+            while (iss >> std::ws && std::getline(iss, header, ' ')) {
+                if (!validateHeader(header)) {
+                    std::cerr << "Error: Invalid header format." << std::endl;
+                    return false;
                 }
-            }
 
-            for (int i = 0; i < headers.size(); i++) {
-                std::cout << headers[i] + " \n";
-                reqProcessor.processHeader(headers[i]);
+                size_t pos = header.find(':');
+                std::string key = header.substr(0, pos);
+                std::string value = header.substr(pos + 1);
+                std::cout<<"key"<<key<<std::endl;
+                std::cout<<"value"<<value<<std::endl;
+                if (!validateKey(key) || !validateValue(value)) {
+                    std::cerr << "Error: Invalid header key-value pair." << std::endl;
+                    return false;
+                }
+                headers[key] = value;
             }
-            std::cout << '\n';
         }
     }
 
-    // Set default authorization if not provided
-    if (auth.empty()) {
-        auth = "Bearer token"; 
-        std::cout << "Default authorization set" << std::endl;
-    }
+    try {
+        std::cout<<url<<' '<<method<<std::endl;
+        auto request = createRequest(url, method);
+        for (const auto &header : headers) {
+            request->addHeader(header.first, header.second);
+        }
+        std::cout<<"Appended headers"<<std::endl;
+        request->setHeaders();
+        std::cout<<"Set headers"<<std::endl;
+        request->send();
+        std::cout<<"Sent request"<<std::endl;
 
-    return reqProcessor.processRequest();
+        std::cout << "Response Data: " << request->getResponseData() << std::endl;
+        std::cout << "Response Headers: " << request->getResponseHeaders() << std::endl;
+        return true;
+    } catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return false;
+    }
 }
 
-/*
-  ∧,,,∧
-(  ̳• · • ̳)
-/     づ♡
-*/
+std::unique_ptr<Request> Parsing::createRequest(const std::string &url, const std::string &method) {
+    if (method == "GET") {
+        return std::make_unique<Get>(url);
+    }
+    else {
+        //not supported
+    }
+}

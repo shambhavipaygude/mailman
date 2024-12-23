@@ -1,21 +1,11 @@
-//
-// Created by a7x on 12/20/24.
-//
-
 #ifndef GET_H
 #define GET_H
-#include <request.h>
 
+#include "request.h"
 
-class get : public request {
-private:
-    std::string response;
-
+class Get : public Request {
 public:
-    get(const std::string &url);
-
+    explicit Get(const std::string &url);
 };
-
-
 
 #endif //GET_H

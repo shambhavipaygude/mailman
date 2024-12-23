@@ -4,7 +4,6 @@
 #include <curl/curl.h>
 #include "processReq.h"
 #include "get.h"
-#include "post.h"
 #include "validator.h"
 
 processReq::processReq() {
@@ -57,27 +56,7 @@ bool processReq::processHeader(const std::string& header) {
         return false;
     }
     std::cout << "Header is valid: Key = '" << key << "', Value = '" << value << "'" << std::endl;
-    setHeaders(key,value);
-    return true;
-}
-
-bool processReq::setHeaders(std::string &key, std::string &value) {
-    if (key.empty() || value.empty()) {
-        std::cerr << "Invalid header: key or value is empty." << std::endl;
-        return false;
-    }
-
-    headers[key] = value;  // Add header to map
-    return true;
-}
-
-bool processReq::setAuthorization(std::string &_auth) {
-    std::vector<std::string> validAuth = {"basic", "digest", "ntlm", "negotiate", "bearer", "none"};
-    if (std::find(validAuth.begin(), validAuth.end(), _auth) == validAuth.end()) {
-        std::cerr << "Invalid authorization: " << _auth << std::endl;
-        return false;
-    }
-    this->auth = _auth;
+    setHeaders(key, value);
     return true;
 }
 
@@ -91,38 +70,20 @@ bool processReq::processRequest() {
     std::cout << "URL: " << this->url << std::endl;
     std::cout << "Method: " << this->method << std::endl;
 
-    if (this->headers.empty()) {
-        std::string key = "Content-Type";
-        std::string value = "application/json";
-        setHeaders(key, value);
-        std::cout << "Default headers set: Content-Type: application/json" << std::endl;
-    }
-
-    // Print headers for debugging
+    request req(this->url);
     for (const auto& header : this->headers) {
-        std::cout << "Header: " << header.first << ": " << header.second << std::endl;
+        req.addHeader(header.first, header.second);
+    }
+    req.setHeaders();
+
+    if (this->method == "GET") {
+        req.send();
+    } else if (this->method == "POST") {
+        req.send();
     }
 
-    // Handle GET or POST requests
-    std::string data;
-    if (this->method == "GET") {
-    get request(this->url);
-    if (!request.isSuccessful()) { 
-        std::cerr << "GET request failed." << std::endl;
-        return false;
-    }
-    } else if (this->method == "POST") {
-        post request(this->url, data);
-        if (!request.isSuccessful()) { 
-            std::cerr << "POST request failed." << std::endl;
-            return false;
-        }
-    }
+    std::cout << "Response Data: " << req.getResponseData() << std::endl;
+    std::cout << "Response Headers: " << req.getResponseHeaders() << std::endl;
+
     return true;
 }
-
-/*
-  ∧,,,∧
-(  ̳• · • ̳)
-/     づ♡
-*/
