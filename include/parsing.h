@@ -1,30 +1,21 @@
-#ifndef REQUEST_H
-#define REQUEST_H
+#ifndef PARSING_H
+#define PARSING_H
 
+#include "request.h"
 #include <string>
 #include <map>
-#include <vector>
-#include <sstream>
-#include <iostream>
-#include <array>
-#include "processReq.h"  
+#include <memory>
 
-class parsing {
+class Parsing {
 public:
-    std::string url;                          
-    std::string method;                       
-    std::map<std::string, std::string> headers; 
-    std::string auth;        
-    
-    processReq reqProcessor;                
-    bool parseInput(std::string &input);                 
-
+    bool parseInput(std::string &input);
+private:
+    std::unique_ptr<Request> createRequest(const std::string &url, const std::string &method);
+    std::map<std::string, std::string> headers;
 };
 
-#endif 
+bool validateURL(const std::string &url);
+bool validateMethod(const std::string &method);
+bool validateHeader(const std::string &header);
 
-/*
-  ∧,,,∧
-(  ̳• · • ̳)
-/     づ♡
-*/
+#endif // PARSING_H

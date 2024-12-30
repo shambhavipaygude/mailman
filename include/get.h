@@ -1,22 +1,11 @@
-//
-// Created by a7x on 12/20/24.
-//
-
 #ifndef GET_H
 #define GET_H
-#include <parsing.h>
 
+#include "request.h"
 
-class get : public parsing {
-private:
-    std::string response;
-    bool successFlag;
-
+class Get : public Request {
 public:
-    get(const std::string &url);
-    bool isSuccessful(); 
+    explicit Get(const std::string &url);
 };
-
-
 
 #endif //GET_H
