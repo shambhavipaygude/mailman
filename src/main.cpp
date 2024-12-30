@@ -1,5 +1,5 @@
 #include <iostream>
-#include "request.h"
+#include "parsing.h"
 
 int main() {
     curl_global_init(CURL_GLOBAL_ALL);
@@ -8,7 +8,7 @@ int main() {
     std::cout << "Enter input in the format: -u URL -m METHOD -a AUTH -h HEADERS" << std::endl;
     std::getline(std::cin, input);
 
-    request r;
+    parsing r;
     if (!r.parseInput(input)) {
         std::cerr << "Error parsing input. Please check your arguments." << std::endl;
         return 1;
