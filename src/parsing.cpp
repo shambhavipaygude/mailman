@@ -72,8 +72,9 @@ bool Parsing::parseInput(std::string &input) {
 std::unique_ptr<Request> Parsing::createRequest(const std::string &url, const std::string &method) {
     if (method == "GET") {
         return std::make_unique<Get>(url);
-    }
-    else {
-        //not supported
+    } else {
+        // Unsupported method
+        throw std::invalid_argument("Error: Unsupported HTTP method: " + method);
     }
 }
+
