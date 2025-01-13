@@ -5,6 +5,8 @@
 #include <iostream>
 #include <memory>
 
+#include "post.h"
+
 bool Parsing::parseInput(std::string &input) {
     std::istringstream iss(input);
     std::string token, url, method = "GET";
@@ -54,14 +56,14 @@ bool Parsing::parseInput(std::string &input) {
         for (const auto &header : headers) {
             request->addHeader(header.first, header.second);
         }
-        std::cout<<"Appended headers"<<std::endl;
+        // std::cout<<"Appending headers..."<<std::endl;
         request->setHeaders();
-        std::cout<<"Set headers"<<std::endl;
+        // std::cout<<"Set headers"<<std::endl;
         request->send();
-        std::cout<<"Sent request"<<std::endl;
-
         std::cout << "Response Data: " << request->getResponseData() << std::endl;
         std::cout << "Response Headers: " << request->getResponseHeaders() << std::endl;
+        std::cout<<"Response Size: "<<request->getResponseSize()<<std::endl;
+
         return true;
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
@@ -72,9 +74,12 @@ bool Parsing::parseInput(std::string &input) {
 std::unique_ptr<Request> Parsing::createRequest(const std::string &url, const std::string &method) {
     if (method == "GET") {
         return std::make_unique<Get>(url);
-    } else {
-        // Unsupported method
-        throw std::invalid_argument("Error: Unsupported HTTP method: " + method);
     }
-}
+    if (method == "POST") {
+        std::string data;
+        std::cout << "Enter data in JSON form: ";
+        return std::make_unique<Post>(url, data);
+    }
 
+    throw std::runtime_error("Invalid method.");
+}

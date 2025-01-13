@@ -1,6 +1,7 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
+#include <iostream>
 #include <map>
 #include <string>
 #include <curl/curl.h>
@@ -22,11 +23,20 @@ protected:
     }
     static size_t header_callback(char *buffer, size_t size, size_t nitems, void *userdata) {
         size_t total_size = size * nitems;
-        std::string *headers = static_cast<std::string *>(userdata);
-        headers->append(buffer, total_size);
+        std::string header(buffer, total_size);
+
+        while (!header.empty() && (header.back() == '\n' || header.back() == '\r')) {
+            header.pop_back();
+        }
+
+        if (!header.empty()) {
+            std::string *headers = static_cast<std::string *>(userdata);
+            headers->append(header);
+            headers->append("\n");
+        }
+
         return total_size;
     }
-
 
 
 public:
@@ -35,6 +45,8 @@ public:
 
     void addHeader(const std::string &headerName, const std::string &headerValue);
     void setHeaders();
+
+    void performRequest();
     virtual void send();
 
     std::string getResponseData() const;

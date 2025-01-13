@@ -32,7 +32,7 @@ void Request::setHeaders() {
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
 }
 
-void Request::send() {
+void Request::performRequest() {
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
     curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
@@ -46,6 +46,10 @@ void Request::send() {
     curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &response_size);
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
 
+}
+
+void Request::send() {
+    performRequest();
 }
 
 std::string Request::getResponseData() const {

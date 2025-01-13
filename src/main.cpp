@@ -10,7 +10,6 @@ int main() {
 
     Parsing parser;
     bool success = parser.parseInput(input);
-
     curl_global_cleanup();
     return success ? 0 : 1;
 }

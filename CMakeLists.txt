@@ -18,6 +18,8 @@ add_executable(mailman src/main.cpp
         src/request.cpp
         include/get.h
         include/parsing.h
+        src/post.cpp
+        include/post.h
 )
 
 target_include_directories(mailman PRIVATE ${CMAKE_SOURCE_DIR}/include ${CURL_INCLUDE_DIRS})
